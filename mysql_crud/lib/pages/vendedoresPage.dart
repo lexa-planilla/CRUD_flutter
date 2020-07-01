@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
@@ -12,10 +14,33 @@ class Vendedores extends StatefulWidget {
 }
 
 class _VendedoresState extends State<Vendedores> {
-  Future<List> _getMenuCategories() async {
+  StreamController _streamController = StreamController();
+  Timer _timer;
+
+  Future _getMenuCategories() async {
     final response =
         await http.get("http://lexa.com.sv/tienda/getMenuCategories.php");
-    return json.decode(response.body);
+
+    //Add your data to stream
+    _streamController.add(jsonDecode(response.body));
+  }
+
+  @override
+  void initState() {
+    _getMenuCategories();
+
+    //Check the server every 5 seconds
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) => _getMenuCategories());
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    //cancel the timer
+    if (_timer.isActive) _timer.cancel();
+
+    super.dispose();
   }
 
   @override
@@ -34,15 +59,49 @@ class _VendedoresState extends State<Vendedores> {
           },
         ),
       ),
-      body: FutureBuilder<List>(
-        future: _getMenuCategories(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) print(snapshot.error);
-          return snapshot.hasData
-              ? ItemList(list: snapshot.data)
-              : Center(
-                  child: CircularProgressIndicator(),
+      body: StreamBuilder(
+        stream: _streamController.stream,
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return ListView.builder(
+              scrollDirection: Axis.vertical,
+              shrinkWrap: true,
+              itemCount: snapshot.data.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Container(
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RegularMenu(
+                                menuCategoryId: snapshot.data[index]["MenuCategoryId"]),
+                          ),
+                        ),
+                        title: Text(
+                          snapshot.data[index]["MenuCategoryId"],
+                          style: TextStyle(
+                              fontFamily: 'Metropolis Bold',
+                              color: Colors.black),
+                        ),
+                        subtitle: Text(
+                          snapshot.data[index]["MenuCategoryName"],
+                          style: TextStyle(
+                              fontFamily: 'Metropolis',
+                              color: Colors.black,
+                              fontSize: 10.0),
+                        ),
+                      ),
+                      Divider(),
+                    ],
+                  ),
                 );
+              },
+            );
+          }
+
+          return Text('Loading...');
         },
       ),
     );
