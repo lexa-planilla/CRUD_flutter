@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 
-import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
-import 'itemsPage.dart';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
+import 'package:mysql_crud/pages/optionals.dart';
 
-class Vendedores extends StatefulWidget {
-  Vendedores({Key key}) : super(key: key);
+class OptionalGroups extends StatelessWidget {
+  final String regularItemId;
+  const OptionalGroups({Key key, this.regularItemId}) : super(key: key);
 
-  @override
-  _VendedoresState createState() => _VendedoresState();
-}
 
-class _VendedoresState extends State<Vendedores> {
-  Future<List> _getMenuCategories() async {
+  Future<List> _getOptionalGroups() async {
     final response =
-        await http.get("http://lexa.com.sv/tienda/getMenuCategories.php");
+        await http.post("http://lexa.com.sv/tienda/getMenuOptionalsGroups.php", body: {
+      "regularItemId": regularItemId,
+    });
+
     return json.decode(response.body);
   }
 
@@ -22,20 +24,10 @@ class _VendedoresState extends State<Vendedores> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.person_pin_circle,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            print("Person cart pressed");
-          },
-        ),
+        backgroundColor: Theme.of(context).primaryColor,     
       ),
       body: FutureBuilder<List>(
-        future: _getMenuCategories(),
+        future: _getOptionalGroups(),
         builder: (context, snapshot) {
           if (snapshot.hasError) print(snapshot.error);
           return snapshot.hasData
@@ -55,6 +47,7 @@ class ItemList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return GridView.builder(
       gridDelegate:
           SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
@@ -68,8 +61,8 @@ class ItemList extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => RegularMenu(
-                        menuCategoryId: list[index]['MenuCategoryId']),
+                    builder: (context) => Optionals(
+                        regularItemId: list[index]['RegularItemId'], optionalGroupId: list[index]['OptionalGroupId'],),
                   ),
                 ),
                 child: Container(
@@ -85,7 +78,7 @@ class ItemList extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: [
                           Color(0xFFFF961F).withOpacity(0.7),
-                          Colors.orange.withOpacity(0.7),
+                          Colors.red.withOpacity(0.7),
                         ],
                       ),
                     ),
@@ -99,7 +92,7 @@ class ItemList extends StatelessWidget {
                                 style: TextStyle(color: Colors.white),
                                 children: [
                                   TextSpan(
-                                    text: list[index]['MenuCategoryName'],
+                                    text: list[index]['GroupName'],
                                     style: TextStyle(
                                       fontSize: 24,
                                       fontFamily: 'Metropolis',

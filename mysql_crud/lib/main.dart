@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'pages/styletest.dart';
 import 'pages/vendedoresPage.dart';
+import 'pages/itemsPage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -16,10 +17,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LoginPage(),
+      home: Vendedores(),
       title: 'CRUD Mysql',
       routes: <String, WidgetBuilder>{
         '/styletest': (BuildContext context) => new StyleTest(),
+        '/itemsPage': (BuildContext context) => new RegularMenu(),
         '/vendedoresPage': (BuildContext context) => new Vendedores(),
         'LoginPage': (BuildContext context) => LoginPage(),
       },
@@ -163,7 +165,7 @@ class _LoginPageState extends State<LoginPage> {
       width: double.infinity,
       child: RaisedButton(
         elevation: 5.0,
-        onPressed: () => {print("Login pressed")},
+        onPressed: _login,
         padding: EdgeInsets.all(15.0),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(35.0),
@@ -181,12 +183,12 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<List> login() async {
-    final response = await http
-        .post("http://143.95.237.93/lexasal1_app/login.php", body: {
-      "username": controllerUsername.text,
-      "password": controllerPassword.text
-    });
+  Future<List> _login() async {
+    final response = await http.post("http://lexa.com.sv/tienda/login.php",
+        body: {
+          "username": controllerUsername.text,
+          "password": controllerPassword.text
+        });
 
     var datauser = json.decode(response.body);
 
@@ -213,6 +215,23 @@ class _LoginPageState extends State<LoginPage> {
       body: Form(
         child: Column(
           children: <Widget>[
+            SizedBox(
+              height: 100.0,
+            ),
+            Text(
+              "Bienvenido wapo",
+              style: TextStyle(fontSize: 18.0, color: Colors.green),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            Text(
+              mensaje,
+              style: TextStyle(fontSize: 18.0, color: Colors.red),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
             _buildEmailTF(),
             SizedBox(
               height: 10.0,

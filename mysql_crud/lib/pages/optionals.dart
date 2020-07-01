@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
 
-import 'package:http/http.dart' as http;
+import 'dart:async';
 import 'dart:convert';
-import 'itemsPage.dart';
+import 'dart:typed_data';
+import 'package:http/http.dart' as http;
 
-class Vendedores extends StatefulWidget {
-  Vendedores({Key key}) : super(key: key);
+class Optionals extends StatelessWidget {
+  final String regularItemId;
+  final String optionalGroupId;
+  const Optionals({Key key, this.regularItemId, this.optionalGroupId}) : super(key: key);
 
-  @override
-  _VendedoresState createState() => _VendedoresState();
-}
 
-class _VendedoresState extends State<Vendedores> {
-  Future<List> _getMenuCategories() async {
+  Future<List> _getOptionals() async {
     final response =
-        await http.get("http://lexa.com.sv/tienda/getMenuCategories.php");
+        await http.post("http://lexa.com.sv/tienda/getMenuOptionals.php", body: {
+      "regularItemId": regularItemId,
+      "optionalGroupId": optionalGroupId,
+    });
+
     return json.decode(response.body);
   }
 
@@ -22,20 +25,10 @@ class _VendedoresState extends State<Vendedores> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.person_pin_circle,
-            color: Colors.white,
-          ),
-          onPressed: () {
-            print("Person cart pressed");
-          },
-        ),
+        backgroundColor: Theme.of(context).primaryColor,     
       ),
       body: FutureBuilder<List>(
-        future: _getMenuCategories(),
+        future: _getOptionals(),
         builder: (context, snapshot) {
           if (snapshot.hasError) print(snapshot.error);
           return snapshot.hasData
@@ -55,6 +48,7 @@ class ItemList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return GridView.builder(
       gridDelegate:
           SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
@@ -65,13 +59,7 @@ class ItemList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RegularMenu(
-                        menuCategoryId: list[index]['MenuCategoryId']),
-                  ),
-                ),
+                onTap: () => {},
                 child: Container(
                   margin: EdgeInsets.only(top: 20),
                   width: double.infinity,
@@ -85,13 +73,13 @@ class ItemList extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: [
                           Color(0xFFFF961F).withOpacity(0.7),
-                          Colors.orange.withOpacity(0.7),
+                          Colors.grey.withOpacity(0.7),
                         ],
                       ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Row(
+                      child: Column(
                         children: <Widget>[
                           Expanded(
                             child: RichText(
@@ -99,9 +87,26 @@ class ItemList extends StatelessWidget {
                                 style: TextStyle(color: Colors.white),
                                 children: [
                                   TextSpan(
-                                    text: list[index]['MenuCategoryName'],
+                                    text: list[index]['OptionalName'],
                                     style: TextStyle(
-                                      fontSize: 24,
+                                      fontSize: 18.0,
+                                      fontFamily: 'Metropolis',
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: RichText(
+                              text: TextSpan(
+                                style: TextStyle(color: Colors.white),
+                                children: [
+                                  TextSpan(
+                                    text: "\$" + list[index]['Price'],
+                                    style: TextStyle(
+                                      fontSize: 18.0,
                                       fontFamily: 'Metropolis',
                                       fontWeight: FontWeight.bold,
                                     ),
