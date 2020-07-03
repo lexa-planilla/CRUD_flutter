@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'itemsPage.dart';
 
@@ -16,7 +17,6 @@ class Vendedores extends StatefulWidget {
 class _VendedoresState extends State<Vendedores> {
   StreamController _streamController = StreamController();
   Timer _timer;
-
   Future _getMenuCategories() async {
     final response =
         await http.get("http://lexa.com.sv/tienda/getMenuCategories.php");
@@ -30,7 +30,8 @@ class _VendedoresState extends State<Vendedores> {
     _getMenuCategories();
 
     //Check the server every 5 seconds
-    _timer = Timer.periodic(Duration(seconds: 5), (timer) => _getMenuCategories());
+    //_timer =
+    //Timer.periodic(Duration(seconds: 5), (timer) => _getMenuCategories());
 
     super.initState();
   }
@@ -38,24 +39,27 @@ class _VendedoresState extends State<Vendedores> {
   @override
   void dispose() {
     //cancel the timer
-    if (_timer.isActive) _timer.cancel();
+    // if (_timer.isActive) _timer.cancel();
 
     super.dispose();
   }
+
+  double _timeOfDayToDouble(TimeOfDay tod) => tod.hour + tod.minute / 60.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.orange,
+        title: Text("Menu categorias"),
         elevation: 0,
         leading: IconButton(
           icon: Icon(
-            Icons.person_pin_circle,
+            Icons.refresh,
             color: Colors.white,
           ),
-          onPressed: () {
-            print("Person cart pressed");
+          onPressed: () async {
+            await _getMenuCategories();
           },
         ),
       ),
@@ -66,35 +70,169 @@ class _VendedoresState extends State<Vendedores> {
             return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
+              
               itemCount: snapshot.data.length,
               itemBuilder: (BuildContext context, int index) {
-                return Container(
-                  child: Column(
-                    children: <Widget>[
-                      ListTile(
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RegularMenu(
-                                menuCategoryId: snapshot.data[index]["MenuCategoryId"]),
+                bool isCategoryAvailable;
+                var nowDayNumber = DateTime.now().day;
+                var daysOn =
+                    snapshot.data[index]["daysOn"].toString().split(",");
+
+                var aviDays = "";
+                var daysWeekend = [
+                  "Domingo",
+                  "Lunes",
+                  "Martes",
+                  "Miercoles",
+                  "Jueves",
+                  "Viernes",
+                  "Sabado"
+                ];
+
+                for (var i = 0; i < daysOn.length; i++) {
+                  if (int.parse(daysOn[i]) == 1) {
+                    aviDays = aviDays + "${daysWeekend[i]}/";
+                  }
+                }
+
+                var timeOn = _timeOfDayToDouble(TimeOfDay.fromDateTime(
+                    DateTime.parse(snapshot.data[index]
+                        ["TimeOn"]))); // _startTime is a TimeOfDay
+                var timeOff = _timeOfDayToDouble(TimeOfDay.fromDateTime(
+                    DateTime.parse(snapshot.data[index]["TimeOff"])));
+
+                var now = _timeOfDayToDouble(TimeOfDay.now());
+                isCategoryAvailable = (snapshot.data[index]["TimeOn"] ==
+                        snapshot.data[index]["TimeOff"])
+                    ? true
+                    : (int.parse(daysOn[nowDayNumber + 2]) == 1
+                        ? now >= timeOn && now <= timeOff
+                        : false);
+
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isCategoryAvailable
+                            ? Colors.lightGreen
+                            : Colors.red,
+                      ),
+                    ),
+                    child: Column(
+                      children: <Widget>[
+                        ListTile(
+                          onTap: () {
+                            if (isCategoryAvailable) {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RegularMenu(
+                                        menuCategoryId: snapshot.data[index]
+                                            ["MenuCategoryId"]),
+                                  ));
+                            } else {
+                              showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                        title: Text(
+                                          "Lo sentimos",
+                                          style: TextStyle(
+                                              fontFamily: 'Metropolis',
+                                              color: Colors.red),
+                                        ),
+                                        content: Row(
+                                          children: <Widget>[
+                                            Text(
+                                              "${snapshot.data[index]["MenuCategoryName"]} está no disponible.",
+                                              style: TextStyle(
+                                                  fontFamily: 'Metropolis',
+                                                  fontSize: 14.0),
+                                            )
+                                          ],
+                                        ),
+                                      ));
+                            }
+                          },
+                          title: Text(
+                            snapshot.data[index]["MenuCategoryName"],
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black),
+                          ),
+                          subtitle: Column(
+                            children: <Widget>[
+                              SizedBox(height: 5.0,),
+                              Row(
+                                children: <Widget>[
+                                  Text(
+                                    'Disponibilidad: ',
+                                    style: TextStyle(
+                                        fontFamily: 'Metropolis',
+                                        color: Colors.black,
+                                        fontSize: 10.0),
+                                  ),
+                                  snapshot.data[index]["TimeOn"] !=
+                                          snapshot.data[index]["TimeOff"]
+                                      ? Container(
+                                          child: Row(
+                                            children: <Widget>[
+                                              Text(
+                                                DateFormat('HH:mm').format(
+                                                    DateTime.parse(
+                                                        snapshot.data[index]
+                                                            ["TimeOn"])),
+                                                style: TextStyle(
+                                                    fontFamily: 'Metropolis',
+                                                    color: Colors.black,
+                                                    fontSize: 10.0),
+                                              ),
+                                              SizedBox(
+                                                width: 10.0,
+                                                child: Text(" -"),
+                                              ),
+                                              Text(
+                                                DateFormat('HH:mm').format(
+                                                    DateTime.parse(
+                                                        snapshot.data[index]
+                                                            ["TimeOff"])),
+                                                style: TextStyle(
+                                                    fontFamily: 'Metropolis',
+                                                    color: Colors.black,
+                                                    fontSize: 10.0),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : Container(
+                                          child: Row(
+                                            children: <Widget>[
+                                              Text(
+                                                '¡Todo el día!',
+                                                style: TextStyle(
+                                                    fontFamily: 'Metropolis',
+                                                    color: Colors.black,
+                                                    fontSize: 10.0),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                ],
+                              ),
+                              SizedBox(height: 5.0,),
+                              Row(
+                                children: <Widget>[
+                                  Text(aviDays,style: TextStyle(fontSize: 10.0),),
+                                  
+                                ],
+                              ),
+                             
+                            ],
                           ),
                         ),
-                        title: Text(
-                          snapshot.data[index]["MenuCategoryId"],
-                          style: TextStyle(
-                              fontFamily: 'Metropolis Bold',
-                              color: Colors.black),
-                        ),
-                        subtitle: Text(
-                          snapshot.data[index]["MenuCategoryName"],
-                          style: TextStyle(
-                              fontFamily: 'Metropolis',
-                              color: Colors.black,
-                              fontSize: 10.0),
-                        ),
-                      ),
-                      Divider(),
-                    ],
+                        Divider(),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -104,82 +242,6 @@ class _VendedoresState extends State<Vendedores> {
           return Text('Loading...');
         },
       ),
-    );
-  }
-}
-
-class ItemList extends StatelessWidget {
-  final List list;
-  ItemList({this.list});
-
-  @override
-  Widget build(BuildContext context) {
-    return GridView.builder(
-      gridDelegate:
-          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-      itemBuilder: (BuildContext context, int index) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 5.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              GestureDetector(
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => RegularMenu(
-                        menuCategoryId: list[index]['MenuCategoryId']),
-                  ),
-                ),
-                child: Container(
-                  margin: EdgeInsets.only(top: 20),
-                  width: double.infinity,
-                  height: 160.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15.0),
-                  ),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFFFF961F).withOpacity(0.7),
-                          Colors.orange.withOpacity(0.7),
-                        ],
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: RichText(
-                              text: TextSpan(
-                                style: TextStyle(color: Colors.white),
-                                children: [
-                                  TextSpan(
-                                    text: list[index]['MenuCategoryName'],
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontFamily: 'Metropolis',
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-      itemCount: list == null ? 0 : list.length,
     );
   }
 }

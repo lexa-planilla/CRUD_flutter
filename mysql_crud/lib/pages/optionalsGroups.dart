@@ -24,7 +24,8 @@ class OptionalGroups extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor,     
+        backgroundColor: Colors.purple,   
+        title: Text("Grupos de modificadores"),  
       ),
       body: FutureBuilder<List>(
         future: _getOptionalGroups(),
@@ -75,29 +76,32 @@ class ItemList extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFFFF961F).withOpacity(0.7),
-                          Colors.red.withOpacity(0.7),
-                        ],
+                      border: Border.all(
+                        color: Colors.purple
                       ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Expanded(
                             child: RichText(
+                              textAlign: TextAlign.center,
                               text: TextSpan(
-                                style: TextStyle(color: Colors.white),
+                                style: TextStyle(color: Colors.black, ),
                                 children: [
                                   TextSpan(
                                     text: list[index]['GroupName'],
                                     style: TextStyle(
-                                      fontSize: 24,
+                                      
+                                      fontSize: 18.0,
                                       fontFamily: 'Metropolis',
                                       fontWeight: FontWeight.bold,
+                                      
                                     ),
+                                    
                                   ),
                                 ],
                               ),
