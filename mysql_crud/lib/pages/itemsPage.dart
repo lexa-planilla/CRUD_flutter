@@ -6,9 +6,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:mysql_crud/pages/optionalsGroups.dart';
+import 'dart:typed_data';
 
 class RegularMenu extends StatelessWidget {
   final String menuCategoryId;
+
   const RegularMenu({Key key, this.menuCategoryId}) : super(key: key);
 
   Future<List> _getRegularMenu() async {
@@ -27,7 +29,6 @@ class RegularMenu extends StatelessWidget {
         backgroundColor: Colors.deepOrange,
         title: Text("Regular menu items"),
       ),
-      
       body: FutureBuilder<List>(
         future: _getRegularMenu(),
         builder: (context, snapshot) {
@@ -45,6 +46,7 @@ class RegularMenu extends StatelessWidget {
 
 class ItemList extends StatelessWidget {
   final List list;
+
   ItemList({this.list});
 
   double _timeOfDayToDouble(TimeOfDay tod) => tod.hour + tod.minute / 60.0;
@@ -89,14 +91,20 @@ class ItemList extends StatelessWidget {
                 ? now >= timeOn && now <= timeOff
                 : false);
 
-        print(list[index]["WebImage"]);
+        //print(list[index]["WebImage"]);
+        Uint8List bytes;
+        var isEmpty = false;
+        try {
+          bytes = base64.decode(list[index]["WebImage"]);
+        } catch (Exception) {
+          isEmpty = true;
+        }
+
         return Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
             decoration: BoxDecoration(
-              
               border: Border.all(
-                
                 color: isItemAvailable ? Colors.lightGreen : Colors.red,
               ),
             ),
@@ -134,6 +142,19 @@ class ItemList extends StatelessWidget {
                               ));
                     }
                   },
+                  leading: (isEmpty)
+                      ? FlutterLogoDecoration()
+                      : ClipRRect(
+                          borderRadius: BorderRadius.all(Radius.circular(25.0)),
+                          child: SizedBox(
+                            width: 50.0,
+                            height: 50.0,
+                            child: Image.memory(
+                              bytes,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
                   title: Text(
                     list[index]["ItemName"],
                     style: TextStyle(

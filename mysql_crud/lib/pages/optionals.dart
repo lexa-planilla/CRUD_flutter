@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class Optionals extends StatefulWidget {
   final String regularItemId;
   final String optionalGroupId;
+
   Optionals({Key key, this.regularItemId, this.optionalGroupId})
       : super(key: key);
 
@@ -14,25 +15,48 @@ class Optionals extends StatefulWidget {
 }
 
 class _OptionalsState extends State<Optionals> {
+  var maximumAllowed = 0;
+  var ingredientsIncluded = 0;
+  var exclusive = false;
+
   Future<List> _getOptionals() async {
     final response = await http
         .post("http://lexa.com.sv/tienda/getMenuOptionals.php", body: {
       "regularItemId": widget.regularItemId,
       "optionalGroupId": widget.optionalGroupId,
     });
-    return json.decode(response.body);
+
+    var result = json.decode(response.body);
+
+    return result;
   }
 
   var total = 0.0;
   var catidadSeleccionada = 0;
+
+  var isMaxElementsReached = false;
 
   var opcionalesSeleccionados = new List();
   var opcionalesSeleccionadosCant = new List();
 
   void _sumOptional(double price, String nombreOpcional) {
     setState(() {
+      if (maximumAllowed != 0) {
+        if (maximumAllowed == catidadSeleccionada) {
+          isMaxElementsReached = true;
+          return;
+        } else {
+          catidadSeleccionada += 1;
+          total += price;
+
+          _addOptional(nombreOpcional);
+          return;
+        }
+      }
+
       catidadSeleccionada += 1;
       total += price;
+
       _addOptional(nombreOpcional);
     });
   }
@@ -58,8 +82,6 @@ class _OptionalsState extends State<Optionals> {
         opcionalesSeleccionados.add(nombreOpcional);
         opcionalesSeleccionadosCant.add(1);
       }
-      print(opcionalesSeleccionados);
-      print(opcionalesSeleccionadosCant);
     });
   }
 
@@ -86,6 +108,34 @@ class _OptionalsState extends State<Optionals> {
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: (maximumAllowed == 0)
+                ? Text("!Escoge!",
+                    style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue))
+                : Text(
+                    "Opcionales restantes disponibles: ${maximumAllowed - catidadSeleccionada}",
+                    style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: ((maximumAllowed - catidadSeleccionada) == 0)
+                            ? Colors.red
+                            : Colors.lightGreen),
+                  ),
+          ),
+          exclusive
+              ? Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Text(
+                    "Solo puede escoger 1",
+                    style:
+                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: Colors.orange),
+                  ),
+                )
+              : Text(''),
           opcionalesSeleccionados == null
               ? Text("No ha seleccionado ningun opcional")
               : Expanded(
@@ -97,8 +147,11 @@ class _OptionalsState extends State<Optionals> {
                           return Column(
                             children: <Widget>[
                               ListTile(
-                                title: Text("${opcionalesSeleccionados[index]}",),
-                                trailing: Text("x${opcionalesSeleccionadosCant[index]}"),
+                                title: Text(
+                                  "${opcionalesSeleccionados[index]}",
+                                ),
+                                trailing: Text(
+                                    "x${opcionalesSeleccionadosCant[index]}"),
                               ),
                             ],
                           );
@@ -122,6 +175,14 @@ class _OptionalsState extends State<Optionals> {
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2),
                         itemBuilder: (BuildContext context, int index) {
+                          maximumAllowed =
+                              int.parse(snapshot.data[index]['MaximumAllowed']);
+                          ingredientsIncluded = int.parse(
+                              snapshot.data[index]['IngredientsIncluded']);
+                          exclusive = snapshot.data[index]['Exclusive'] == '0';
+                          if (exclusive) {
+                            maximumAllowed = 1;
+                          }
                           return Padding(
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 5.0),
