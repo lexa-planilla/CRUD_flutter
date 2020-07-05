@@ -17,6 +17,7 @@ class Vendedores extends StatefulWidget {
 class _VendedoresState extends State<Vendedores> {
   StreamController _streamController = StreamController();
   Timer _timer;
+
   Future _getMenuCategories() async {
     final response =
         await http.get("http://lexa.com.sv/tienda/getMenuCategories.php");
@@ -28,19 +29,11 @@ class _VendedoresState extends State<Vendedores> {
   @override
   void initState() {
     _getMenuCategories();
-
-    //Check the server every 5 seconds
-    //_timer =
-    //Timer.periodic(Duration(seconds: 5), (timer) => _getMenuCategories());
-
     super.initState();
   }
 
   @override
   void dispose() {
-    //cancel the timer
-    // if (_timer.isActive) _timer.cancel();
-
     super.dispose();
   }
 
@@ -70,11 +63,10 @@ class _VendedoresState extends State<Vendedores> {
             return ListView.builder(
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
-              
               itemCount: snapshot.data.length,
               itemBuilder: (BuildContext context, int index) {
                 bool isCategoryAvailable;
-                var nowDayNumber = DateTime.now().day;
+                var nowDayNumber = 7 - DateTime.now().weekday;
                 var daysOn =
                     snapshot.data[index]["daysOn"].toString().split(",");
 
@@ -102,10 +94,14 @@ class _VendedoresState extends State<Vendedores> {
                     DateTime.parse(snapshot.data[index]["TimeOff"])));
 
                 var now = _timeOfDayToDouble(TimeOfDay.now());
+                //print(daysOn);
+                //print((int.parse(daysOn[nowDayNumber]) == 1));
+                //verificando si este dia esta disponible la categoria
+
                 isCategoryAvailable = (snapshot.data[index]["TimeOn"] ==
                         snapshot.data[index]["TimeOff"])
                     ? true
-                    : (int.parse(daysOn[nowDayNumber + 2]) == 1
+                    : (int.parse(daysOn[nowDayNumber]) == 1
                         ? now >= timeOn && now <= timeOff
                         : false);
 
@@ -162,7 +158,9 @@ class _VendedoresState extends State<Vendedores> {
                           ),
                           subtitle: Column(
                             children: <Widget>[
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Row(
                                 children: <Widget>[
                                   Text(
@@ -219,14 +217,17 @@ class _VendedoresState extends State<Vendedores> {
                                         ),
                                 ],
                               ),
-                              SizedBox(height: 5.0,),
+                              SizedBox(
+                                height: 5.0,
+                              ),
                               Row(
                                 children: <Widget>[
-                                  Text(aviDays,style: TextStyle(fontSize: 10.0),),
-                                  
+                                  Text(
+                                    aviDays,
+                                    style: TextStyle(fontSize: 10.0),
+                                  ),
                                 ],
                               ),
-                             
                             ],
                           ),
                         ),

@@ -131,8 +131,10 @@ class _OptionalsState extends State<Optionals> {
                   padding: const EdgeInsets.all(18.0),
                   child: Text(
                     "Solo puede escoger 1",
-                    style:
-                        TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: Colors.orange),
+                    style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange),
                   ),
                 )
               : Text(''),
@@ -179,7 +181,7 @@ class _OptionalsState extends State<Optionals> {
                               int.parse(snapshot.data[index]['MaximumAllowed']);
                           ingredientsIncluded = int.parse(
                               snapshot.data[index]['IngredientsIncluded']);
-                          exclusive = snapshot.data[index]['Exclusive'] == '0';
+                          exclusive = snapshot.data[index]['Exclusive'] == '1';
                           if (exclusive) {
                             maximumAllowed = 1;
                           }
