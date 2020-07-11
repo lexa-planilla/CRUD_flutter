@@ -66,7 +66,7 @@ class _VendedoresState extends State<Vendedores> {
               itemCount: snapshot.data.length,
               itemBuilder: (BuildContext context, int index) {
                 bool isCategoryAvailable;
-                var nowDayNumber = 7 - DateTime.now().weekday;
+                var nowDayNumber =  DateTime.now().weekday ;
                 var daysOn =
                     snapshot.data[index]["daysOn"].toString().split(",");
 
@@ -94,8 +94,9 @@ class _VendedoresState extends State<Vendedores> {
                     DateTime.parse(snapshot.data[index]["TimeOff"])));
 
                 var now = _timeOfDayToDouble(TimeOfDay.now());
-                //print(daysOn);
-                //print((int.parse(daysOn[nowDayNumber]) == 1));
+                print(daysOn);
+                print(nowDayNumber);
+                print((int.parse(daysOn[nowDayNumber]) == 1));
                 //verificando si este dia esta disponible la categoria
 
                 isCategoryAvailable = (snapshot.data[index]["TimeOn"] ==
