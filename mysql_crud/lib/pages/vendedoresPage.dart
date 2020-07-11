@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 import 'dart:convert';
 import 'itemsPage.dart';
 
@@ -99,9 +100,8 @@ class _VendedoresState extends State<Vendedores> {
                 print((int.parse(daysOn[nowDayNumber]) == 1));
                 //verificando si este dia esta disponible la categoria
 
-                isCategoryAvailable = (snapshot.data[index]["TimeOn"] ==
-                        snapshot.data[index]["TimeOff"])
-                    ? true
+                isCategoryAvailable = (snapshot.data[index]["TimeOn"] == snapshot.data[index]["TimeOff"])
+                    ? (int.parse(daysOn[nowDayNumber]) == 1)
                     : (int.parse(daysOn[nowDayNumber]) == 1
                         ? now >= timeOn && now <= timeOff
                         : false);
@@ -151,11 +151,18 @@ class _VendedoresState extends State<Vendedores> {
                                       ));
                             }
                           },
-                          title: Text(
-                            snapshot.data[index]["MenuCategoryName"],
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black),
+                          title:Shimmer.fromColors(
+                            baseColor: (isCategoryAvailable) ? Colors.green : Colors.red,
+                            highlightColor: (isCategoryAvailable) ? Colors.lightGreen : Colors.red,
+                            child: Text(
+                              snapshot.data[index]["MenuCategoryName"],
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 40.0,
+                                fontWeight:
+                                FontWeight.bold,
+                              ),
+                            ),
                           ),
                           subtitle: Column(
                             children: <Widget>[

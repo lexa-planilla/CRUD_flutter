@@ -59,7 +59,7 @@ class ItemList extends StatelessWidget {
       itemCount: list.length,
       itemBuilder: (BuildContext context, int index) {
         bool isItemAvailable;
-        var nowDayNumber = DateTime.now().day;
+        var nowDayNumber = DateTime.now().weekday;
         var daysOn = list[index]["daysOn"].toString().split(",");
 
         var aviDays = "";
@@ -87,7 +87,7 @@ class ItemList extends StatelessWidget {
         var now = _timeOfDayToDouble(TimeOfDay.now());
         isItemAvailable = (list[index]["TimeOn"] == list[index]["TimeOff"])
             ? true
-            : (int.parse(daysOn[nowDayNumber + 2]) == 1
+            : (int.parse(daysOn[nowDayNumber]) == 1
                 ? now >= timeOn && now <= timeOff
                 : false);
 
@@ -132,7 +132,7 @@ class ItemList extends StatelessWidget {
                                 content: Row(
                                   children: <Widget>[
                                     Text(
-                                      "${list[index]["RegularItemId"]} está no disponible.",
+                                      "${list[index]["ItemName"]} está no disponible.",
                                       style: TextStyle(
                                           fontFamily: 'Metropolis',
                                           fontSize: 14.0),
@@ -230,9 +230,12 @@ class ItemList extends StatelessWidget {
                       ),
                       Row(
                         children: <Widget>[
-                          Text(
-                            aviDays,
-                            style: TextStyle(fontSize: 10.0),
+                          SizedBox(
+                            child: Text(
+                              aviDays,
+                              style: TextStyle(fontSize: 10.0),
+                            ),
+                            width: MediaQuery.of(context).size.width * 0.40,
                           ),
                         ],
                       ),
