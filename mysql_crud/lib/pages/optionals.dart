@@ -34,6 +34,9 @@ class _OptionalsState extends State<Optionals> {
   var total = 0.0;
   var catidadSeleccionada = 0;
 
+  //Los que lleva el usuario
+  var countIngredientsIncluded = 0;
+
   var isMaxElementsReached = false;
 
   var opcionalesSeleccionados = new List();
@@ -46,12 +49,25 @@ class _OptionalsState extends State<Optionals> {
           isMaxElementsReached = true;
           return;
         } else {
+          if (ingredientsIncluded != 0 &&
+              countIngredientsIncluded != ingredientsIncluded) {
+            catidadSeleccionada += 1;
+            _addOptional(nombreOpcional);
+            countIngredientsIncluded++;
+            return;
+          }
           catidadSeleccionada += 1;
           total += price;
-
           _addOptional(nombreOpcional);
           return;
         }
+      }
+
+      if (ingredientsIncluded != 0 &&
+          countIngredientsIncluded != ingredientsIncluded) {
+        _addOptional(nombreOpcional);
+        countIngredientsIncluded++;
+        return;
       }
 
       catidadSeleccionada += 1;
@@ -67,6 +83,7 @@ class _OptionalsState extends State<Optionals> {
       total = 0.0;
       opcionalesSeleccionados = new List();
       opcionalesSeleccionadosCant = new List();
+      countIngredientsIncluded = 0;
     });
   }
 

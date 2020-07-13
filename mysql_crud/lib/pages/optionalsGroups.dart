@@ -8,12 +8,12 @@ import 'package:mysql_crud/pages/optionals.dart';
 
 class OptionalGroups extends StatelessWidget {
   final String regularItemId;
+
   const OptionalGroups({Key key, this.regularItemId}) : super(key: key);
 
-
   Future<List> _getOptionalGroups() async {
-    final response =
-        await http.post("http://lexa.com.sv/tienda/getMenuOptionalsGroups.php", body: {
+    final response = await http
+        .post("http://lexa.com.sv/tienda/getMenuOptionalsGroups.php", body: {
       "regularItemId": regularItemId,
     });
 
@@ -24,8 +24,8 @@ class OptionalGroups extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.purple,   
-        title: Text("Grupos de modificadores"),  
+        backgroundColor: Colors.purple,
+        title: Text("Grupos de modificadores"),
       ),
       body: FutureBuilder<List>(
         future: _getOptionalGroups(),
@@ -44,15 +44,20 @@ class OptionalGroups extends StatelessWidget {
 
 class ItemList extends StatelessWidget {
   final List list;
+
   ItemList({this.list});
 
   @override
   Widget build(BuildContext context) {
-    
+    //Es obligatorio el optional?
+    var isMandatory = false;
+
     return GridView.builder(
       gridDelegate:
           SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
       itemBuilder: (BuildContext context, int index) {
+        isMandatory = list[index]['Mandatory'] == '1';
+        print(list[index]['Mandatory']);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 5.0),
           child: Column(
@@ -63,7 +68,9 @@ class ItemList extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => Optionals(
-                        regularItemId: list[index]['RegularItemId'], optionalGroupId: list[index]['OptionalGroupId'],),
+                      regularItemId: list[index]['RegularItemId'],
+                      optionalGroupId: list[index]['OptionalGroupId'],
+                    ),
                   ),
                 ),
                 child: Container(
@@ -76,37 +83,39 @@ class ItemList extends StatelessWidget {
                   child: DecoratedBox(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.purple
-                      ),
+                      border: Border.all(color: Colors.purple),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
-                      child: Row(
+                      child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
-                          Expanded(
-                            child: RichText(
-                              textAlign: TextAlign.center,
-                              text: TextSpan(
-                                style: TextStyle(color: Colors.black, ),
-                                children: [
-                                  TextSpan(
-                                    text: list[index]['GroupName'],
-                                    style: TextStyle(
-                                      
-                                      fontSize: 18.0,
-                                      fontFamily: 'Metropolis',
-                                      fontWeight: FontWeight.bold,
-                                      
-                                    ),
-                                    
-                                  ),
-                                ],
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: TextStyle(
+                                color: Colors.black,
                               ),
+                              children: [
+                                TextSpan(
+                                  text: list[index]['GroupName'],
+                                  style: TextStyle(
+                                    fontSize: 18.0,
+                                    fontFamily: 'Metropolis',
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
+                          SizedBox(
+                            height: 25.0,
+                          ),
+                          Text(
+                            isMandatory ? "Requerido" : "",
+                            style: TextStyle(color: Colors.red),
+                          )
                         ],
                       ),
                     ),
