@@ -67,7 +67,8 @@ class _VendedoresState extends State<Vendedores> {
               itemCount: snapshot.data.length,
               itemBuilder: (BuildContext context, int index) {
                 bool isCategoryAvailable;
-                var nowDayNumber =  DateTime.now().weekday ;
+                var nowDayNumber =
+                    (DateTime.now().weekday) == 7 ? 0 : DateTime.now().weekday;
                 var daysOn =
                     snapshot.data[index]["daysOn"].toString().split(",");
 
@@ -100,7 +101,8 @@ class _VendedoresState extends State<Vendedores> {
                 print((int.parse(daysOn[nowDayNumber]) == 1));
                 //verificando si este dia esta disponible la categoria
 
-                isCategoryAvailable = (snapshot.data[index]["TimeOn"] == snapshot.data[index]["TimeOff"])
+                isCategoryAvailable = (snapshot.data[index]["TimeOn"] ==
+                        snapshot.data[index]["TimeOff"])
                     ? (int.parse(daysOn[nowDayNumber]) == 1)
                     : (int.parse(daysOn[nowDayNumber]) == 1
                         ? now >= timeOn && now <= timeOff
@@ -151,16 +153,19 @@ class _VendedoresState extends State<Vendedores> {
                                       ));
                             }
                           },
-                          title:Shimmer.fromColors(
-                            baseColor: (isCategoryAvailable) ? Colors.green : Colors.red,
-                            highlightColor: (isCategoryAvailable) ? Colors.lightGreen : Colors.red,
+                          title: Shimmer.fromColors(
+                            baseColor: (isCategoryAvailable)
+                                ? Colors.green
+                                : Colors.red,
+                            highlightColor: (isCategoryAvailable)
+                                ? Colors.lightGreen
+                                : Colors.red,
                             child: Text(
                               snapshot.data[index]["MenuCategoryName"],
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 40.0,
-                                fontWeight:
-                                FontWeight.bold,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),

@@ -59,7 +59,8 @@ class ItemList extends StatelessWidget {
       itemCount: list.length,
       itemBuilder: (BuildContext context, int index) {
         bool isItemAvailable;
-        var nowDayNumber = DateTime.now().weekday;
+        var nowDayNumber =
+        (DateTime.now().weekday) == 7 ? 0 : DateTime.now().weekday;
         var daysOn = list[index]["daysOn"].toString().split(",");
 
         var aviDays = "";
